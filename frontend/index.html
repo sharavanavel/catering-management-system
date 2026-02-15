@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CaterPro Premium – Management System</title>
+    <style>
+        :root { --p: #f43f5e; --bg: #0f172a; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.1); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: #fff; min-height: 100vh; overflow-x: hidden; }
+        
+        /* Page Navigation Animation */
+        .page { display: none; padding: 20px; animation: slideIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+        /* Modern UI Elements */
+        .glass { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 40px; }
+        .auth-card { max-width: 400px; margin: 100px auto; text-align: center; }
+        
+        input { width: 100%; padding: 14px; margin: 12px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; }
+        input:focus { border-color: var(--p); }
+
+        .btn { width: 100%; padding: 15px; background: var(--p); color: #fff; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #e11d48; transform: translateY(-2px); }
+
+        .navbar { padding: 20px 40px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        
+        /* Expandable Card logic */
+        .event-card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 20px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
+        .event-card:hover { border-color: var(--p); background: rgba(255,255,255,0.08); }
+        .reg-area { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
+        .reg-area.open { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .prog-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .prog-fill { height: 100%; background: var(--p); transition: 0.6s; }
+
+        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 15px 30px; border-radius: 12px; transition: 0.5s; z-index: 9999; }
+        #notif.show { top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="notif">✅ Registration Success! Check Mail.</div>
+
+    <div id="authPage" class="page active">
+        <div class="glass auth-card">
+            <h1 style="color:var(--p); margin-bottom:10px;">🍽️ CATERPRO</h1>
+            <div id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email" value="sharavanavelj@gmail.com">
+                <input type="password" id="loginPass" placeholder="Password">
+                <button class="btn" onclick="doLogin()">SIGN IN</button>
+                <p style="margin-top:20px; font-size:14px; color:#94a3b8">New? <span onclick="toggleAuth('signup')" style="color:var(--p); cursor:pointer; font-weight:bold;">Create Account</span></p>
+            </div>
+            <div id="signupForm" style="display:none">
+                <input type="text" id="signupName" placeholder="Full Name">
+                <input type="email" id="signupEmail" placeholder="Email">
+                <input type="password" id="signupPass" placeholder="Password">
+                <button class="btn" onclick="doSignup()">CREATE ACCOUNT</button>
+                <p style="margin-top:20px; font-size:14px; color:#94a3b8">Back to <span onclick="toggleAuth('login')" style="color:var(--p); cursor:pointer; font-weight:bold;">Sign In</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashPage" class="page">
+        <nav class="navbar"><h2>CATER<span style="color:var(--p)">PRO.</span></h2> <button onclick="doLogout()" style="background:none; border:none; color:var(--p); cursor:pointer; font-weight:bold;">Logout</button></nav>
+        <div style="max-width:900px; margin:60px auto;">
+            <h1 id="greet" style="font-size:35px; margin-bottom:40px;">Welcome!</h1>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="event-card" onclick="goTo('hostPage')" style="text-align:center;"><h1>📋</h1><h3>Host New Event</h3></div>
+                <div class="event-card" onclick="goTo('catererPage')" style="text-align:center;"><h1>🍴</h1><h3>Browse Available Jobs</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="catererPage" class="page">
+        <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:white; border:none; cursor:pointer;">← Back</button><b>Available Vacancies</b><span></span></nav>
+        <div id="eventsGrid" style="max-width:650px; margin:40px auto;"></div>
+    </div>
+
+    <div id="hostPage" class="page">
+        <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:white; border:none; cursor:pointer;">← Back</button><b>Post Requirement</b><span></span></nav>
+        <div class="glass" style="max-width:550px; margin:40px auto; padding:40px;">
+            <input id="hfName" placeholder="Function Name"><input id="hfDate" type="date"><input id="hfMembers" type="number" placeholder="Staff Count"><input id="hfLocation" placeholder="Location"><input id="hfAmount" type="number" placeholder="Pay (₹)"><button class="btn" onclick="submitEvent()">POST TO SYSTEM</button>
+        </div>
+    </div>
+
+    <script>
+        var API = 'http://localhost:5000', token = localStorage.getItem('caterpro_token'), user = JSON.parse(localStorage.getItem('caterpro_user'));
+        function $(id) { return document.getElementById(id); }
+        function showNotif() { $('notif').classList.add('show'); setTimeout(()=>$('notif').classList.remove('show'),3000); }
+
+        function toggleAuth(mode) {
+            $('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+            $('signupForm').style.display = mode === 'signup' ? 'block' : 'none';
+        }
+
+        function goTo(id) {
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            $(id).classList.add('active');
+            if(id==='catererPage') loadEvents();
+            if(id==='dashPage' && user) $('greet').textContent = "Hello, " + user.name + "!";
+        }
+
+        async function apiCall(method, end, body) {
+            var h = { 'Content-Type': 'application/json' };
+            if(token) h['Authorization'] = 'Bearer '+token;
+            var r = await fetch(API+end, { method, headers: h, body: body?JSON.stringify(body):null });
+            return await r.json();
+        }
+
+        async function doLogin() {
+            var d = await apiCall('POST', '/api/auth/login', { email:$('loginEmail').value, password:$('loginPass').value });
+            if(d.token) { token=d.token; user=d.user; localStorage.setItem('caterpro_token', token); localStorage.setItem('caterpro_user', JSON.stringify(user)); goTo('dashPage'); }
+            else { alert("Login Failed"); }
+        }
+
+        async function doSignup() {
+            var d = await apiCall('POST', '/api/auth/signup', { name:$('signupName').value, email:$('signupEmail').value, password:$('signupPass').value });
+            if(d.token) { token=d.token; user=d.user; localStorage.setItem('caterpro_token', token); localStorage.setItem('caterpro_user', JSON.stringify(user)); goTo('dashPage'); }
+        }
+
+        async function submitEvent() {
+            await apiCall('POST', '/api/events', { functionName:$('hfName').value, date:$('hfDate').value, totalMembersNeeded:$('hfMembers').value, location:$('hfLocation').value, amount:$('hfAmount').value });
+            showNotif(); goTo('dashPage');
+        }
+
+        async function loadEvents() {
+            var evs = await apiCall('GET', '/api/events');
+            $('eventsGrid').innerHTML = evs.map(e => {
+                const available = e.totalMembersNeeded - e.membersRegistered;
+                return `
+                <div class="event-card" onclick="toggleDetails('${e._id}')">
+                    <div style="display:flex; justify-content:space-between;"><b>${e.functionName}</b><span style="color:var(--p)">₹${e.amount}</span></div>
+                    <p style="font-size:12px; color:#94a3b8; margin:10px 0;">📍 ${e.location} | 📅 ${e.date}</p>
+                    <div class="prog-bg"><div class="prog-fill" style="width:${(e.membersRegistered/e.totalMembersNeeded)*100}%"></div></div>
+                    
+                    <div id="area_${e._id}" class="reg-area">
+                        <p style="font-size:13px; margin-bottom:15px; color:#10b981; font-weight:bold;">Needed Person: ${available}</p>
+                        <input type="number" id="count_${e._id}" placeholder="How many members?" onclick="event.stopPropagation()">
+                        <button class="btn" style="padding:10px" onclick="registerMe(event, '${e._id}')">Confirm Registration</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleDetails(id) { $('area_'+id).classList.toggle('open'); }
+
+        async function registerMe(ev, id) {
+            ev.stopPropagation();
+            const count = $('count_'+id).value;
+            if(!count || count < 1) return alert("Enter count!");
+
+            const res = await fetch(API+'/api/events/'+id+'/register', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+token },
+                body: JSON.stringify({ members: count })
+            });
+
+            if(res.status === 400) {
+                alert("Slots not available!"); 
+            } else if(res.ok) {
+                showNotif(); loadEvents();
+            }
+        }
+
+        function doLogout() { localStorage.clear(); location.reload(); }
+        window.onload = () => { if(token) goTo('dashPage'); };
+    </script>
+</body>
+</html>
