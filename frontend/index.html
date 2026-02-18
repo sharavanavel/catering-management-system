@@ -1,42 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head >
+<head>
     <meta name="google-site-verification" content="zm9C9rV2T1uw07dAEMMXqk1JqyXPlUL7I58o_tIq-aw" />
     <meta charset="UTF-8">
     <title>CaterPro Premium – Management System</title>
     <style>
-        :root { --p: #f43f5e; --bg: #0f172a; --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.1); }
+        /* --- LIGHT THEME COLOR PALETTE --- */
+        :root {
+            --p: #f43f5e; /* Pink (Primary - same) */
+            --s: #0284c7; /* Darker Blue for better contrast */
+            --bg: #e0f2fe; /* main background: LIGHT BLUE */
+            --card: rgba(255, 255, 255, 0.8); /* Whitish glass card */
+            --border: rgba(0, 0, 0, 0.1); /* Faint dark border */
+            --text-main: #1e293b; /* Dark text for readability */
+            --text-sub: #64748b; /* Gray text for sub-info */
+        }
         * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; min-height: 100vh; overflow-x: hidden; }
         
-        /* Page Navigation Animation */
+        /* Body bg is light blue, Text is dark */
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        
         .page { display: none; padding: 20px; animation: slideIn 0.4s ease; }
         .page.active { display: block; }
         @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-
-        /* Modern UI Elements */
-        .glass { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 40px; }
+        
+        /* Glass effect tweaked for light background (whitish with shadow) */
+        .glass { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .auth-card { max-width: 400px; margin: 100px auto; text-align: center; }
         
-        input { width: 100%; padding: 14px; margin: 12px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; }
-        input:focus { border-color: var(--p); }
-
-        .btn { width: 100%; padding: 15px; background: var(--p); color: #fff; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background: #e11d48; transform: translateY(-2px); }
-
-        .navbar { padding: 20px 40px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        /* Input styles changed for light background (white bg, dark text) */
+        input { width: 100%; padding: 14px; margin: 12px 0; background: #ffffff; border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); outline: none; transition: 0.3s;}
+        input:focus { border-color: var(--s); background: #f0f9ff; }
         
-        /* Expandable Card logic */
-        .event-card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 20px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
-        .event-card:hover { border-color: var(--p); background: rgba(255,255,255,0.08); }
+        .btn { width: 100%; padding: 15px; background: var(--p); color: #fff; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: #e11d48; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.4); }
+        
+        .navbar { padding: 20px 40px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); }
+        
+        /* Event card styles for light theme */
+        .event-card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 20px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .event-card:hover { border-color: var(--s); background: #ffffff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transform: translateY(-2px); }
+        
         .reg-area { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border); }
         .reg-area.open { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .prog-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        
+        /* Progress bar background made darker */
+        .prog-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 15px 0; overflow: hidden; }
         .prog-fill { height: 100%; background: var(--p); transition: 0.6s; }
-
-        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 15px 30px; border-radius: 12px; transition: 0.5s; z-index: 9999; }
+        
+        #notif { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 15px 30px; border-radius: 12px; transition: 0.5s; z-index: 9999; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         #notif.show { top: 20px; }
     </style>
 </head>
@@ -51,20 +64,20 @@
                 <input type="email" id="loginEmail" placeholder="Email" value="sharavanavelj@gmail.com">
                 <input type="password" id="loginPass" placeholder="Password">
                 <button class="btn" onclick="doLogin()">SIGN IN</button>
-                <p style="margin-top:20px; font-size:14px; color:#94a3b8">New? <span onclick="toggleAuth('signup')" style="color:var(--p); cursor:pointer; font-weight:bold;">Create Account</span></p>
+                <p style="margin-top:20px; font-size:14px; color:var(--text-sub)">New? <span onclick="toggleAuth('signup')" style="color:var(--s); cursor:pointer; font-weight:bold;">Create Account</span></p>
             </div>
             <div id="signupForm" style="display:none">
                 <input type="text" id="signupName" placeholder="Full Name">
                 <input type="email" id="signupEmail" placeholder="Email">
                 <input type="password" id="signupPass" placeholder="Password">
                 <button class="btn" onclick="doSignup()">CREATE ACCOUNT</button>
-                <p style="margin-top:20px; font-size:14px; color:#94a3b8">Back to <span onclick="toggleAuth('login')" style="color:var(--p); cursor:pointer; font-weight:bold;">Sign In</span></p>
+                <p style="margin-top:20px; font-size:14px; color:var(--text-sub)">Back to <span onclick="toggleAuth('login')" style="color:var(--s); cursor:pointer; font-weight:bold;">Sign In</span></p>
             </div>
         </div>
     </div>
 
     <div id="dashPage" class="page">
-        <nav class="navbar"><h2>CATER<span style="color:var(--p)">PRO.</span></h2> <button onclick="doLogout()" style="background:none; border:none; color:var(--p); cursor:pointer; font-weight:bold;">Logout</button></nav>
+        <nav class="navbar"><h2>CATER<span style="color:var(--p)">PRO.</span></h2> <button onclick="doLogout()" style="background:none; border:none; color:var(--s); cursor:pointer; font-weight:bold;">Logout</button></nav>
         <div style="max-width:900px; margin:60px auto;">
             <h1 id="greet" style="font-size:35px; margin-bottom:40px;">Welcome!</h1>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
@@ -75,19 +88,24 @@
     </div>
 
     <div id="catererPage" class="page">
-        <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:white; border:none; cursor:pointer;">← Back</button><b>Available Vacancies</b><span></span></nav>
+        <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:var(--text-main); border:none; cursor:pointer;">← Back</button><b>Available Vacancies</b><span></span></nav>
         <div id="eventsGrid" style="max-width:650px; margin:40px auto;"></div>
     </div>
 
     <div id="hostPage" class="page">
-        <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:white; border:none; cursor:pointer;">← Back</button><b>Post Requirement</b><span></span></nav>
+         <nav class="navbar"><button onclick="goTo('dashPage')" style="background:none; color:var(--text-main); border:none; cursor:pointer;">← Back</button><b>Post Requirement</b><span></span></nav>
         <div class="glass" style="max-width:550px; margin:40px auto; padding:40px;">
-            <input id="hfName" placeholder="Function Name"><input id="hfDate" type="date"><input id="hfMembers" type="number" placeholder="Staff Count"><input id="hfLocation" placeholder="Location"><input id="hfAmount" type="number" placeholder="Pay (₹)"><button class="btn" onclick="submitEvent()">POST TO SYSTEM</button>
+            <input id="hfName" placeholder="Function Name"><input id="hfDate" type="date"><input id="hfMembers" type="number" placeholder="Staff Count"><input id="hfLocation" placeholder="Location"><input id="hfAmount" type="number" placeholder="Pay (₹)">
+            <button class="btn" onclick="submitEvent()">REGISTER</button>
+            <button class="btn" style="background: #94a3b8; margin-top: 15px;" onclick="['hfName','hfDate','hfMembers','hfLocation','hfAmount'].forEach(id => document.getElementById(id).value='')">CLEAR</button>
         </div>
     </div>
 
     <script>
-        var API = 'https://catering-management-system-54su.onrender.com', token = localStorage.getItem('caterpro_token'), user = JSON.parse(localStorage.getItem('caterpro_user'));
+        var API = 'https://dieciously-endothelial-abram.ngrok-free.dev'; 
+        token = localStorage.getItem('caterpro_token'), 
+        user = JSON.parse(localStorage.getItem('caterpro_user'));
+
         function $(id) { return document.getElementById(id); }
         function showNotif() { $('notif').classList.add('show'); setTimeout(()=>$('notif').classList.remove('show'),3000); }
 
@@ -105,20 +123,42 @@
 
         async function apiCall(method, end, body) {
             var h = { 'Content-Type': 'application/json' };
-            if(token) h['Authorization'] = 'Bearer '+token;
-            var r = await fetch(API+end, { method, headers: h, body: body?JSON.stringify(body):null });
-            return await r.json();
+            if(token) h['Authorization'] = 'Bearer ' + token;
+            
+            try {
+                var r = await fetch(API + end, { method, headers: h, body: body ? JSON.stringify(body) : null });
+                var resData = await r.json();
+                if(!r.ok) throw new Error(resData.message || "API Error");
+                return resData;
+            } catch (e) {
+                console.error(e);
+                return { error: e.message };
+            }
         }
 
         async function doLogin() {
-            var d = await apiCall('POST', '/api/auth/login', { email:$('loginEmail').value, password:$('loginPass').value });
-            if(d.token) { token=d.token; user=d.user; localStorage.setItem('caterpro_token', token); localStorage.setItem('caterpro_user', JSON.stringify(user)); goTo('dashPage'); }
-            else { alert("Login Failed"); }
+            var email = $('loginEmail').value;
+            var password = $('loginPass').value;
+            var d = await apiCall('POST', '/api/auth/login', { email, password });
+            
+            if(d.token) { 
+                token = d.token; user = d.user; 
+                localStorage.setItem('caterpro_token', token); 
+                localStorage.setItem('caterpro_user', JSON.stringify(user)); 
+                goTo('dashPage'); 
+            } else { 
+                alert(d.error || "Login Failed"); 
+            }
         }
 
         async function doSignup() {
             var d = await apiCall('POST', '/api/auth/signup', { name:$('signupName').value, email:$('signupEmail').value, password:$('signupPass').value });
-            if(d.token) { token=d.token; user=d.user; localStorage.setItem('caterpro_token', token); localStorage.setItem('caterpro_user', JSON.stringify(user)); goTo('dashPage'); }
+            if(d.token) { 
+                token=d.token; user=d.user; 
+                localStorage.setItem('caterpro_token', token); 
+                localStorage.setItem('caterpro_user', JSON.stringify(user)); 
+                goTo('dashPage'); 
+            } else { alert(d.error || "Signup Failed"); }
         }
 
         async function submitEvent() {
@@ -128,14 +168,15 @@
 
         async function loadEvents() {
             var evs = await apiCall('GET', '/api/events');
+            if(evs.error) return;
             $('eventsGrid').innerHTML = evs.map(e => {
                 const available = e.totalMembersNeeded - e.membersRegistered;
+                // Using var(--text-sub) for gray subtext
                 return `
                 <div class="event-card" onclick="toggleDetails('${e._id}')">
-                    <div style="display:flex; justify-content:space-between;"><b>${e.functionName}</b><span style="color:var(--p)">₹${e.amount}</span></div>
-                    <p style="font-size:12px; color:#94a3b8; margin:10px 0;">📍 ${e.location} | 📅 ${e.date}</p>
+                    <div style="display:flex; justify-content:space-between;"><b>${e.functionName}</b><span style="color:var(--s)">₹${e.amount}</span></div>
+                    <p style="font-size:12px; color:var(--text-sub); margin:10px 0;">📍 ${e.location} | 📅 ${e.date}</p>
                     <div class="prog-bg"><div class="prog-fill" style="width:${(e.membersRegistered/e.totalMembersNeeded)*100}%"></div></div>
-                    
                     <div id="area_${e._id}" class="reg-area">
                         <p style="font-size:13px; margin-bottom:15px; color:#10b981; font-weight:bold;">Needed Person: ${available}</p>
                         <input type="number" id="count_${e._id}" placeholder="How many members?" onclick="event.stopPropagation()">
