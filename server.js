@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,14 +8,14 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // MONGODB CONNECTION
-// Local Development-kaga:
-const MONGO_URI = 'mongodb://127.0.0.1:27017/catemongodb+srv://shara_31:<Vel@31>@cluster0.bg9berl.mongodb.net/?appName=Cluster0';
-const JWT_SECRET = 'cater_secret_123';
+// .env file-la MONGO_URI and JWT_SECRET define pannunga
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/caterpro_db';
+const JWT_SECRET = process.env.JWT_SECRET || 'cater_secret_123';
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log('✅ MongoDB Connected'))
@@ -22,18 +23,18 @@ mongoose.connect(MONGO_URI)
 
 // SCHEMAS
 const User = mongoose.model('User', new mongoose.Schema({
-    name: String, 
-    email: { type: String, unique: true }, 
+    name: String,
+    email: { type: String, unique: true },
     password: String
 }));
 
 const Event = mongoose.model('Event', new mongoose.Schema({
-    functionName: String, 
-    date: String, 
+    functionName: String,
+    date: String,
     amount: Number,
-    totalMembersNeeded: Number, 
+    totalMembersNeeded: Number,
     membersRegistered: { type: Number, default: 0 },
-    location: String, 
+    location: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }));
 
@@ -41,8 +42,8 @@ const Event = mongoose.model('Event', new mongoose.Schema({
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'sharavanavelvarshini@gmail.com',
-        pass: 'imxp aiyv ondc zjzx' // Idhu "App Password"-a irukkanum
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
     }
 });
 
@@ -50,11 +51,11 @@ const transporter = nodemailer.createTransport({
 function auth(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(401).json({ message: "No Token" });
-    try { 
-        req.user = jwt.verify(token, JWT_SECRET); 
-        next(); 
-    } catch { 
-        res.status(401).json({ message: "Invalid Token" }); 
+    try {
+        req.user = jwt.verify(token, JWT_SECRET);
+        next();
+    } catch {
+        res.status(401).json({ message: "Invalid Token" });
     }
 }
 
@@ -105,7 +106,7 @@ app.patch('/api/events/:id/register', auth, async (req, res) => {
     try {
         const { members } = req.body;
         const event = await Event.findById(req.params.id).populate('createdBy');
-        
+
         if (!event) return res.status(404).json({ message: "Event not found" });
 
         const available = event.totalMembersNeeded - event.membersRegistered;
@@ -161,13 +162,11 @@ app.patch('/api/events/:id/register', auth, async (req, res) => {
         // Response immediately send pannalaam, mail backend-la send aagum
         res.json(event);
 
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Registration failed", error: err.message }); 
+        res.status(500).json({ message: "Registration failed", error: err.message });
     }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is live on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
