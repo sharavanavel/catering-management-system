@@ -40,10 +40,16 @@ const Event = mongoose.model('Event', new mongoose.Schema({
 
 // NODEMAILER CONFIG
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
+    family: 4,     // Force IPv4 (Render fix)
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
